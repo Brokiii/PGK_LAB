@@ -58,6 +58,7 @@ public class EnemyController : MonoBehaviour
             {
                 moveSpeed = 0;
                 animator.SetBool("isDead", true);
+                GameManager.instance.addEnemyKilled();
                 StartCoroutine(KillOnAnimationEnd());
             }
         }

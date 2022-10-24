@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static GameManager;
 
 public class PlayerControllerLevel1 : MonoBehaviour
 {
@@ -12,11 +13,9 @@ public class PlayerControllerLevel1 : MonoBehaviour
     public Animator animator;
     public bool isWalking = false;
     private bool isFacingRight = true;
-    private int score = 0;
     private float killOffset;
     private Vector2 startPosition;
     public int maxKeyNumber = 3;
-    private int keyNumer = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -27,11 +26,15 @@ public class PlayerControllerLevel1 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.instance.currentGameState != GameState.GS_GAME)
+            return;
+
         isWalking = false;
 
         if(transform.position.y < -20)
         {
             transform.position = startPosition;
+            GameManager.instance.removeHeart();
         }
 
         transform.rotation = Quaternion.Euler(0, 0, 0);
@@ -93,38 +96,47 @@ public class PlayerControllerLevel1 : MonoBehaviour
     {
         if(other.CompareTag("Coal"))
         {
-            score += 100;
-            Debug.Log("Aktualny wynik: " + score);
+            GameManager.instance.AddCoins(100);
             other.gameObject.SetActive(false);
-        } else if (other.CompareTag("Stick"))
+        } 
+        else if (other.CompareTag("Stick"))
         {
-            score += 50;
-            Debug.Log("Aktualny wynik: " + score);
+            GameManager.instance.AddCoins(50);
             other.gameObject.SetActive(false);
-        } else if (other.CompareTag("EndGame"))
+        } 
+        else if (other.CompareTag("EndGame"))
         {
-            if (maxKeyNumber == keyNumer)
-            {
-                Debug.Log("KONIEC POZIOMU! WYNIK: " + score + " kW pr¹du!");
-            } else
-            {
-                Debug.Log("Musisz zebrac wszystkie klucze! Aktualnie zebrano: " + keyNumer);
-            }
-        } else if (other.CompareTag("Enemy"))
+            Debug.Log("Koniec");
+        } 
+        else if (other.CompareTag("Enemy"))
         {
             if (other.transform.position.y > transform.position.y)
             {
-                Debug.Log("UTRATA ZYCIA!");
+                GameManager.instance.removeHeart();
                 transform.position = startPosition;
             }
-        } else if (other.CompareTag("Key"))
+        } 
+        else if (other.CompareTag("KeyYellow"))
         {
-            keyNumer += 1;
+            GameManager.instance.addKey(0, Color.yellow);
             other.gameObject.SetActive(false);
-            Debug.Log("Zebrano " + keyNumer + " z " + maxKeyNumber + " kluczy!");
-        } else if (other.CompareTag("Heart"))
+            Debug.Log("yellow");
+        }
+        else if (other.CompareTag("KeyGreen"))
         {
-            Debug.Log("Dodano dodatkowe zycie!");
+            GameManager.instance.addKey(1, Color.green);
+            other.gameObject.SetActive(false);
+            Debug.Log("gren");
+        }
+        else if (other.CompareTag("KeyRed"))
+        {
+            GameManager.instance.addKey(2, Color.red);
+            other.gameObject.SetActive(false);
+            Debug.Log("red");
+        }
+        else if (other.CompareTag("Heart"))
+        {
+            GameManager.instance.addHeart();
             other.gameObject.SetActive(false);
         }
     }
