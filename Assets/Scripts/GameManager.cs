@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
 public enum GameState
 {
     GS_PAUSEMENU,
@@ -12,9 +14,12 @@ public enum GameState
 
 public class GameManager : MonoBehaviour
 {
-    public GameState currentGameState;
+    public GameState currentGameState = GameState.GS_PAUSEMENU;
     public static GameManager instance;
+    public Canvas pauseMenuCanvas;
     public Canvas inGameCanvas;
+    public Canvas gameOverCanvas;
+    public Canvas levelCompletedCanvas;
     public Text coalText;
     private int coals = 0;
     public Image[] keysTab;
@@ -25,11 +30,14 @@ public class GameManager : MonoBehaviour
     public Text timerText;
     public Text enemykilledText;
     private int enemykilled = 0;
+    public int maxKeyNumber = 3;
+    public bool keysCompleted = false;
 
     void Awake()
     {
         instance = this;
-        foreach(Image image in keysTab)
+        InGame();
+        foreach (Image image in keysTab)
         {
             image.color = Color.grey;
         }
@@ -44,12 +52,13 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(currentGameState == GameState.GS_PAUSEMENU)
+        if(Input.GetKey(KeyCode.Escape) && currentGameState == GameState.GS_PAUSEMENU)
         {
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.Escape))
-            {
-                InGame();
-            }
+           InGame();
+        }
+        else if(Input.GetKey(KeyCode.Escape) && currentGameState == GameState.GS_GAME)
+        {
+            PauseMenu();
         }
         timer += Time.deltaTime;
         float timertemp = timer;
@@ -71,11 +80,16 @@ public class GameManager : MonoBehaviour
     {
         Keys += 1;
         keysTab[number].color = color;
+        if (Keys == maxKeyNumber)
+            keysCompleted = true;
     }
     public void removeHeart()
     {
         if (Hearts < 0)
+        {
+            GameOver();
             return;
+        }
 
         heartTab[Hearts].enabled = false;
         Hearts--;
@@ -97,13 +111,18 @@ public class GameManager : MonoBehaviour
     void SetGameState(GameState newGameState)
     {
         currentGameState = newGameState;
-        if(newGameState == GameState.GS_GAME)
+        /*if(newGameState == GameState.GS_GAME)
         {
             inGameCanvas.enabled = true;
         } else
         {
             inGameCanvas.enabled = false;
-        }
+        }*/
+        inGameCanvas.enabled = (currentGameState == GameState.GS_GAME);
+        pauseMenuCanvas.enabled = (currentGameState == GameState.GS_PAUSEMENU);
+        gameOverCanvas.enabled = (currentGameState == GameState.GS_GAME_OVER);
+        levelCompletedCanvas.enabled = (currentGameState == GameState.GS_LEVELCOMPLETED);
+
     }
 
     void InGame()
@@ -121,8 +140,29 @@ public class GameManager : MonoBehaviour
         SetGameState(GameState.GS_PAUSEMENU);
     }
 
-    void LevelCompleted()
+    public void LevelCompleted()
     {
         SetGameState(GameState.GS_LEVELCOMPLETED);
     }
+
+    public void OnResumeButtonClicked()
+    {
+        InGame();
+    }
+
+    public void OnRestartButtonClicked()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void OnExitButtonClicked()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void OnNextLevelButtonClicked()
+    {
+        SceneManager.LoadScene("Level2");
+    }
+
 }

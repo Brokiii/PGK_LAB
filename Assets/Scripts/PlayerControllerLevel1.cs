@@ -40,7 +40,14 @@ public class PlayerControllerLevel1 : MonoBehaviour
         transform.rotation = Quaternion.Euler(0, 0, 0);
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
         {
-            transform.Translate(moveSpeed * Time.deltaTime, 0, 0, Space.World);
+            if (transform.parent != null)
+            {
+                Unlock();
+            }
+            else
+            {
+                transform.Translate(moveSpeed * Time.deltaTime, 0, 0, Space.World);
+            }
             isWalking = true;
             if(!isFacingRight)
             {
@@ -48,15 +55,27 @@ public class PlayerControllerLevel1 : MonoBehaviour
             }
         } else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
         {
-            transform.Translate(-moveSpeed * Time.deltaTime, 0, 0, Space.World);
+            if (transform.parent != null)
+            {
+                Unlock();
+            }
+            else
+            {
+                transform.Translate(-moveSpeed * Time.deltaTime, 0, 0, Space.World);
+            }
             isWalking = true;
             if(isFacingRight)
             {
                 Flip();
             }
+
         }
         else if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
         {
+            if (transform.parent != null)
+            {
+                Unlock();
+            }
             Jump();
         }
 
@@ -106,7 +125,16 @@ public class PlayerControllerLevel1 : MonoBehaviour
         } 
         else if (other.CompareTag("EndGame"))
         {
-            Debug.Log("Koniec");
+            if (GameManager.instance.keysCompleted)
+            {
+                Debug.Log("Koniec");
+                GameManager.instance.LevelCompleted();
+            }
+            else
+            {
+                Debug.Log("Brakuje Ci kluczy!");
+            }
+            
         } 
         else if (other.CompareTag("Enemy"))
         {
@@ -138,6 +166,33 @@ public class PlayerControllerLevel1 : MonoBehaviour
         {
             GameManager.instance.addHeart();
             other.gameObject.SetActive(false);
+        }
+        else if (other.CompareTag("MovingPlatform"))
+        {
+
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.CompareTag("MovingPlatform"))
+        {
+            rigidBody.isKinematic = true;
+            transform.parent = other.transform;
+        }
+    }
+
+    private void Unlock()
+    {
+        rigidBody.isKinematic = false;
+        transform.parent = null;
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("MovingPlatform"))
+        {
+            Unlock();
         }
     }
 }
