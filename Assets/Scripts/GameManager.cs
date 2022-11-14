@@ -21,11 +21,11 @@ public class GameManager : MonoBehaviour
     public Canvas gameOverCanvas;
     public Canvas levelCompletedCanvas;
     public Text coalText;
-    private int coals = 0;
+    public int coals = 0;
     public Image[] keysTab;
     public Image[] heartTab;
     private int Keys = 0;
-    private int Hearts = 2;
+    public int Hearts = 2;
     float timer = 0;
     public Text timerText;
     public Text enemykilledText;
@@ -37,10 +37,10 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
         InGame();
-        foreach (Image image in keysTab)
-        {
-            image.color = Color.grey;
-        }
+        //foreach (Image image in keysTab)
+        //{
+        //    image.color = Color.grey;
+        //}
     }
 
     // Start is called before the first frame update
@@ -70,6 +70,15 @@ public class GameManager : MonoBehaviour
         }
         int seconds = (int)timertemp;
         timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+        if(timer > LevelGenerator.instance.maxTimeGame)
+        {
+            LevelGenerator.instance.Finish();
+        }
+    }
+    public void ResetTimer()
+    {
+        timer = 0;
     }
     public void addEnemyKilled()
     {
@@ -105,6 +114,12 @@ public class GameManager : MonoBehaviour
     public void AddCoins(int value)
     {
         coals += value;
+        coalText.text = coals.ToString() + "kg";
+    }
+
+    public void ResetCoins()
+    {
+        coals = 0;
         coalText.text = coals.ToString() + "kg";
     }
 

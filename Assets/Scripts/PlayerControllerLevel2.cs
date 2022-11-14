@@ -1,14 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static GameManager;
 
-public class PlayerControllerLevel1 : MonoBehaviour
+public class PlayerControllerLevel2 : MonoBehaviour
 {
-    [SerializeField] public float moveSpeed = 7.0f;
+    [SerializeField] public float moveSpeed = 4.0f;
     [SerializeField] public float jumpForce = 10.0f;
     [SerializeField] private Rigidbody2D rigidBody;
-    public LayerMask groundLayer;
+    [SerializeField] public LayerMask groundLayer;
     [SerializeField] private float groundCollisionLength = 1.75f;
     public Animator animator;
     public bool isWalking = false;
@@ -20,67 +19,38 @@ public class PlayerControllerLevel1 : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (GameManager.instance.currentGameState != GameState.GS_GAME)
-            return;
-
-        isWalking = false;
-
-        if(transform.position.y < -20)
+        Debug.Log(GameManager.instance.Hearts);
+        if(GameManager.instance.currentGameState == GameState.GS_GAME)
         {
-            transform.position = startPosition;
-            GameManager.instance.removeHeart();
-        }
-
-        transform.rotation = Quaternion.Euler(0, 0, 0);
-        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-        {
-            if (transform.parent != null)
-            {
-                Unlock();
-            }
-            else
-            {
-                transform.Translate(moveSpeed * Time.deltaTime, 0, 0, Space.World);
-            }
+            transform.rotation = Quaternion.Euler(0, 0, 0);
             isWalking = true;
-            if(!isFacingRight)
+            if(rigidBody.velocity.x < moveSpeed)
             {
-                Flip();
-            }
-        } else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-        {
-            if (transform.parent != null)
-            {
-                Unlock();
-            }
-            else
-            {
-                transform.Translate(-moveSpeed * Time.deltaTime, 0, 0, Space.World);
-            }
-            isWalking = true;
-            if(isFacingRight)
-            {
-                Flip();
+                rigidBody.velocity = new Vector2(moveSpeed, rigidBody.velocity.y);
             }
 
-        }
-        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
-        {
-            if (transform.parent != null)
+            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
             {
-                Unlock();
+                if (transform.parent != null)
+                {
+                    Unlock();
+                }
+                Jump();
             }
-            Jump();
-        }
 
-        animator.SetBool("isGrounded", IsGrounded());
-        animator.SetBool("isWalking", isWalking);
+            animator.SetBool("isGrounded", IsGrounded());
+            animator.SetBool("isWalking", isWalking);
+        } else
+        {
+            isWalking = false;
+            rigidBody.velocity = new Vector2(0, 0);
+        }
     }
 
     void Awake()
@@ -113,29 +83,21 @@ public class PlayerControllerLevel1 : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.CompareTag("Coal"))
+        if (other.CompareTag("Coal"))
         {
             GameManager.instance.AddCoins(100);
             other.gameObject.SetActive(false);
-        } 
+        }
         else if (other.CompareTag("Stick"))
         {
             GameManager.instance.AddCoins(50);
             other.gameObject.SetActive(false);
-        } 
+        }
         else if (other.CompareTag("EndGame"))
         {
-            if (GameManager.instance.keysCompleted)
-            {
                 Debug.Log("Koniec");
                 GameManager.instance.LevelCompleted();
-            }
-            else
-            {
-                Debug.Log("Brakuje Ci kluczy!");
-            }
-            
-        } 
+        }
         else if (other.CompareTag("Enemy"))
         {
             if (other.transform.position.y > transform.position.y)
@@ -143,7 +105,7 @@ public class PlayerControllerLevel1 : MonoBehaviour
                 GameManager.instance.removeHeart();
                 transform.position = startPosition;
             }
-        } 
+        }
         else if (other.CompareTag("KeyYellow"))
         {
             GameManager.instance.addKey(0, Color.yellow);
@@ -173,10 +135,16 @@ public class PlayerControllerLevel1 : MonoBehaviour
         }
         else if (other.CompareTag("FallTrigger"))
         {
+            foreach(LevelPieceBasic piece in LevelGenerator.instance.pieces) {
+                Destroy(piece.gameObject);
+            }
             LevelGenerator.instance.pieces.Clear();
             LevelGenerator.instance.AddPiece();
             LevelGenerator.instance.AddPiece();
             transform.position = new Vector3(-14.63f, -3.07f, -1.0f);
+            GameManager.instance.removeHeart();
+            GameManager.instance.ResetCoins();
+            GameManager.instance.ResetTimer();
         }
     }
 
