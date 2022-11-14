@@ -10,7 +10,7 @@ public class LevelGenerator : MonoBehaviour
     public List<LevelPieceBasic> levelPrefabs = new List<LevelPieceBasic>();
     public List<LevelPieceBasic> pieces = new List<LevelPieceBasic>();
 
-    public int maxTimeGame = 10;
+    public int maxTimeGame = 40;
     bool shouldFinish = false;
     // Start is called before the first frame update
     void Start()
