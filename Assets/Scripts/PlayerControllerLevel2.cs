@@ -16,6 +16,9 @@ public class PlayerControllerLevel2 : MonoBehaviour
     private Vector2 startPosition;
     public int maxKeyNumber = 3;
 
+    private AudioSource source;
+    public AudioClip coinSound;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -56,6 +59,7 @@ public class PlayerControllerLevel2 : MonoBehaviour
     void Awake()
     {
         rigidBody = GetComponent<Rigidbody2D>();
+        source = GetComponent<AudioSource>();
         startPosition = transform.position;
     }
 
@@ -86,11 +90,13 @@ public class PlayerControllerLevel2 : MonoBehaviour
         if (other.CompareTag("Coal"))
         {
             GameManager.instance.AddCoins(100);
+            source.PlayOneShot(coinSound, AudioListener.volume);
             other.gameObject.SetActive(false);
         }
         else if (other.CompareTag("Stick"))
         {
             GameManager.instance.AddCoins(50);
+            source.PlayOneShot(coinSound, AudioListener.volume);
             other.gameObject.SetActive(false);
         }
         else if (other.CompareTag("EndGame"))

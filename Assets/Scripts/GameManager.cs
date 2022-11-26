@@ -32,15 +32,28 @@ public class GameManager : MonoBehaviour
     private int enemykilled = 0;
     public int maxKeyNumber = 3;
     public bool keysCompleted = false;
+    Scene currentScene;
+    public Text scoreText;
+    public Text bestScoreText;
+    private int maxSecsToHihtScore = 120;
 
     void Awake()
     {
         instance = this;
+        currentScene = SceneManager.GetActiveScene();
         InGame();
-        //foreach (Image image in keysTab)
-        //{
-        //    image.color = Color.grey;
-        //}
+        if (currentScene.name == "SampleScene")
+        {
+            foreach (Image image in keysTab)
+            {
+                image.color = Color.grey;
+            }
+        }
+
+        if(!PlayerPrefs.HasKey("HighscoreLevel1"))
+        {
+            PlayerPrefs.SetInt("HighscoreLevel1", 0);
+        }
     }
 
     // Start is called before the first frame update
@@ -71,9 +84,12 @@ public class GameManager : MonoBehaviour
         int seconds = (int)timertemp;
         timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
 
-        if(timer > LevelGenerator.instance.maxTimeGame)
+        if (currentScene.name == "Level2")
         {
-            LevelGenerator.instance.Finish();
+            if (timer > LevelGenerator.instance.maxTimeGame)
+            {
+                LevelGenerator.instance.Finish();
+            }
         }
     }
     public void ResetTimer()
@@ -126,6 +142,33 @@ public class GameManager : MonoBehaviour
     void SetGameState(GameState newGameState)
     {
         currentGameState = newGameState;
+
+
+        if (newGameState == GameState.GS_LEVELCOMPLETED)
+        {
+            Scene currentScene = SceneManager.GetActiveScene();
+            if (currentScene.name == "SampleScene")
+            {
+                int score = Hearts * 100 + coals + enemykilled * 50 + (maxSecsToHihtScore - (int)timer) * 20 + 1500;
+                if (PlayerPrefs.GetInt("HighscoreLevel1") < score)
+                {
+                    PlayerPrefs.SetInt("HighscoreLevel1", score);
+                }
+                Debug.Log("test");
+                bestScoreText.text = "Highscore: " + PlayerPrefs.GetInt("HighscoreLevel1");
+                scoreText.text = "Score: " + score;
+            } else if (currentScene.name == "Level2")
+            {
+                int score = Hearts * 100 + coals + enemykilled * 50 + (maxSecsToHihtScore - (int)timer) * 20 + 1900;
+                if (PlayerPrefs.GetInt("HighscoreLevel2") < score)
+                {
+                    PlayerPrefs.SetInt("HighscoreLevel2", score);
+                }
+                Debug.Log("test");
+                bestScoreText.text = "Highscore: " + PlayerPrefs.GetInt("HighscoreLevel2");
+                scoreText.text = "Score: " + score;
+            }
+        }
         /*if(newGameState == GameState.GS_GAME)
         {
             inGameCanvas.enabled = true;
@@ -137,7 +180,6 @@ public class GameManager : MonoBehaviour
         pauseMenuCanvas.enabled = (currentGameState == GameState.GS_PAUSEMENU);
         gameOverCanvas.enabled = (currentGameState == GameState.GS_GAME_OVER);
         levelCompletedCanvas.enabled = (currentGameState == GameState.GS_LEVELCOMPLETED);
-
     }
 
     void InGame()
